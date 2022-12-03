@@ -33,9 +33,9 @@ func main() {
 			// 非服务方式运行
 			switch s.Platform() {
 			case "windows-service":
-				log.Println("可使用 .\\ikun.exe -s install 安装服务运行")
+				log.Println("可使用 .\\ikun-go.exe -s install 安装服务运行")
 			default:
-				log.Println("可使用 sudo ./ikun -s install 安装服务运行")
+				log.Println("可使用 sudo ./ikun-go -s install 安装服务运行")
 			}
 			jntm()
 		}
@@ -66,8 +66,8 @@ func getService() service.Service {
 	}
 
 	svcConfig := &service.Config{
-		Name:        "ikun",
-		DisplayName: "ikun",
+		Name:        "ikun-go",
+		DisplayName: "ikun-go",
 		Description: "author:labulac@88.com",
 		Option:      options,
 		Arguments:   []string{},
@@ -86,14 +86,14 @@ func uninstallService() {
 	s := getService()
 	s.Stop()
 	if service.ChosenSystem().String() == "unix-systemv" {
-		if _, err := exec.Command("/etc/init.d/ikun", "stop").Output(); err != nil {
+		if _, err := exec.Command("/etc/init.d/ikun-go", "stop").Output(); err != nil {
 			log.Println(err)
 		}
 	}
 	if err := s.Uninstall(); err == nil {
-		log.Println("ikun 服务卸载成功!")
+		log.Println("ikun-go 服务卸载成功!")
 	} else {
-		log.Printf("ikun 服务卸载失败, ERR: %s\n", err)
+		log.Printf("ikun-go 服务卸载失败, ERR: %s\n", err)
 	}
 }
 
@@ -107,23 +107,23 @@ func installService() {
 		if err = s.Install(); err == nil {
 			s.Start()
 
-			log.Println("安装 ikun 服务成功!")
+			log.Println("安装 ikun-go 服务成功!")
 			if service.ChosenSystem().String() == "unix-systemv" {
-				if _, err := exec.Command("/etc/init.d/ikun", "enable").Output(); err != nil {
+				if _, err := exec.Command("/etc/init.d/ikun-go", "enable").Output(); err != nil {
 					log.Println(err)
 				}
-				if _, err := exec.Command("/etc/init.d/ikun", "start").Output(); err != nil {
+				if _, err := exec.Command("/etc/init.d/ikun-go", "start").Output(); err != nil {
 					log.Println(err)
 				}
 			}
 			return
 		}
 
-		log.Printf("安装 ikun 服务失败, ERR: %s\n", err)
+		log.Printf("安装 ikun-go 服务失败, ERR: %s\n", err)
 	}
 
 	if status != service.StatusUnknown {
-		log.Println("ikun 服务已安装, 无需再次安装")
+		log.Println("ikun-go 服务已安装, 无需再次安装")
 	}
 }
 
@@ -174,7 +174,7 @@ func jntm() {
 const sysvScript = `#!/bin/sh /etc/rc.common
 DESCRIPTION="{{.Description}}"
 cmd="{{.Path}}{{range .Arguments}} {{.|cmd}}{{end}}"
-name="ikun"
+name="ikun-go"
 pid_file="/var/run/$name.pid"
 stdout_log="/var/log/$name.log"
 stderr_log="/var/log/$name.err"
