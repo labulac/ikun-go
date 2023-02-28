@@ -5,6 +5,7 @@ go 1.19
 require (
 	github.com/faiface/beep v1.1.0
 	github.com/gin-gonic/gin v1.8.1
+	github.com/kardianos/service v1.2.2
 	github.com/robotn/gohook v0.40.0
 )
 
@@ -30,7 +31,7 @@ require (
 	golang.org/x/image v0.0.0-20190227222117-0694c2d4d067 // indirect
 	golang.org/x/mobile v0.0.0-20190415191353-3e0bab5405d6 // indirect
 	golang.org/x/net v0.0.0-20210226172049-e18ecbb05110 // indirect
-	golang.org/x/sys v0.2.0 // indirect
+	golang.org/x/sys v0.5.0 // indirect
 	golang.org/x/text v0.3.6 // indirect
 	google.golang.org/protobuf v1.28.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
