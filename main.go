@@ -1,28 +1,77 @@
 package main
 
 import (
+	"flag"
+	"fmt"
 	"github.com/gin-gonic/gin"
-	"github.com/kardianos/service"
 	hook "github.com/robotn/gohook"
+	"golang.org/x/sys/windows/registry"
 	"ikun-go/player"
 	"log"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 )
 
 var port = "9882"
-var logger = service.ConsoleLogger
+var serviceType = flag.String("s", "", "支持install,uninstall")
 
-type program struct{}
+func main() {
+	flag.Parse()
+	switch *serviceType {
+	case "install":
+		log.Println("install")
+		// 获取程序路径
+		exePath, err := os.Executable()
+		if err != nil {
+			panic(err)
+		}
 
-func (p *program) Start(s service.Service) error {
-	go p.run()
-	return nil
+		// 创建注册表项
+		key, _, err := registry.CreateKey(registry.CURRENT_USER, `SOFTWARE\Microsoft\Windows\CurrentVersion\Run`, registry.ALL_ACCESS)
+		if err != nil {
+			panic(err)
+		}
+		defer key.Close()
+
+		// 写入程序路径
+		err = key.SetStringValue(filepath.Base(exePath), exePath)
+		if err != nil {
+			panic(err)
+		}
+
+		fmt.Println("程序已设置开机自启动")
+	case "uninstall":
+		log.Println("uninstall")
+		// 获取程序路径
+		exePath, err := os.Executable()
+		if err != nil {
+			panic(err)
+		}
+
+		// 打开注册表项
+		key, err := registry.OpenKey(registry.CURRENT_USER, `SOFTWARE\Microsoft\Windows\CurrentVersion\Run`, registry.ALL_ACCESS)
+		if err != nil {
+			panic(err)
+		}
+		defer key.Close()
+
+		// 删除程序路径
+		err = key.DeleteValue(filepath.Base(exePath))
+		if err != nil {
+			panic(err)
+		}
+
+		fmt.Println("程序已取消开机自启动")
+	default:
+		log.Println("default")
+		start()
+	}
+
 }
 
-func (p *program) run() {
-	log.Println("使用 install参数增加开机自启动")
+func start() {
 	gin.SetMode(gin.ReleaseMode)
 	r := gin.Default()
 	r.GET("/", func(c *gin.Context) {
@@ -36,64 +85,6 @@ func (p *program) run() {
 	}()
 
 	jntm()
-}
-
-func (p *program) Stop(s service.Service) error {
-	return nil
-}
-
-func main() {
-	svcConfig := &service.Config{
-		Name:        "akun", //服务显示名称
-		DisplayName: "akun", //服务名称
-		Description: "微服务",  //服务描述
-	}
-
-	prg := &program{}
-	s, err := service.New(prg, svcConfig)
-	if err != nil {
-		logger.Error(err)
-	}
-
-	if err != nil {
-		logger.Error(err)
-	}
-
-	if len(os.Args) > 1 {
-		switch os.Args[1] {
-		case "install":
-			s.Install()
-			logger.Info("服务安装成功!")
-			s.Start()
-			logger.Info("服务启动成功!")
-			break
-		case "start":
-			s.Start()
-			logger.Info("服务启动成功!")
-			break
-		case "stop":
-			s.Stop()
-			logger.Info("服务关闭成功!")
-			break
-		case "restart":
-			s.Stop()
-			logger.Info("服务关闭成功!")
-			s.Start()
-			logger.Info("服务启动成功!")
-			break
-		case "remove":
-			s.Stop()
-			logger.Info("服务关闭成功!")
-			s.Uninstall()
-			logger.Info("服务卸载成功!")
-			break
-		}
-		return
-	}
-	err = s.Run()
-	if err != nil {
-		logger.Error(err)
-	}
 }
 
 var lastNum int
